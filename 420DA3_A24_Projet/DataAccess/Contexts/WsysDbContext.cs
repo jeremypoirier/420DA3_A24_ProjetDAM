@@ -1,5 +1,6 @@
 ﻿using _420DA3_A24_Projet.Business.Domain;
 using Microsoft.EntityFrameworkCore;
+using System.Configuration;
 
 namespace _420DA3_A24_Projet.DataAccess.Contexts;
 internal class WsysDbContext : DbContext {
@@ -11,8 +12,10 @@ internal class WsysDbContext : DbContext {
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
         base.OnConfiguring(optionsBuilder);
 
+        string connString = ConfigurationManager.ConnectionStrings["ProjectDatabase"].ConnectionString;
+
         _ = optionsBuilder
-            .UseSqlServer("") // TODO: Add connection string
+            .UseSqlServer(connString)
             .UseLazyLoadingProxies();
     }
 
