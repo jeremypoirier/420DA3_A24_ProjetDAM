@@ -1,64 +1,108 @@
-﻿using System;
-
+﻿namespace _420DA3_A24_Projet.Business.Domain;
+/// <summary>
+/// Classe représentant une expédition.
+/// </summary>
 public class Expedition {
-    private static int _idCounter = 1;                   // Compteur d ID unique pour chaque instance
+    // Constantes pour les services de livraison
+    public const string PUROLATOR = "Purolator";
+    public const string POSTES_CANADA = "PostesCanada";
+    public const string FEDEX = "FedEx";
 
-    public int Id { get; private set; }                 // Identifiant interne unique
-    public string DeliveryService { get; private set; } // Service de livraison
-    public string TrackingCode { get; private set; }    // Code de suivi genere automatiquement
+    /// <summary>
+    /// Liste des services de livraison valides.
+    /// </summary>
+    public static readonly string[] DeliveryServices = { PUROLATOR, POSTES_CANADA, FEDEX };
 
-    public DateTime CreationDate { get; private set; } = DateTime.Now; // Date de création automatique
-    public DateTime? ModificationDate { get; private set; } // Date de modification automatique
-    public DateTime? DeletionDate { get; private set; } // Date de suppression automatique
+    #region Propriétés de données
 
-    // Valeurs possibles pour le service de livraison
-    private static readonly string[] AllowedServices = { "Purolator", "PostesCanada", "FedEx" };
+    /// <summary>
+    /// Identifiant unique de l'expédition.
+    /// </summary>
+    public int Id { get; set; }
 
-    // Constructeur par defaut (non utilise ici mais peut etre utile)
+    /// <summary>
+    /// Service de livraison utilisé pour l'expédition.
+    /// </summary>
+    public string DeliveryService { get; set; } = PUROLATOR;
 
-    public Expedition() { }
+    /// <summary>
+    /// Code de suivi généré automatiquement par le service de livraison.
+    /// </summary>
+    public string TrackingCode { get; set; } = string.Empty;
 
-    // Constructeur principal avec un service de livraison (code de suivi genere automatiquement)
+    /// <summary>
+    /// Date de création automatique.
+    /// </summary>
+    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
-    public Expedition(string deliveryService) {
-        if (!IsValidService(deliveryService))
-            throw new ArgumentException("Service de livraison invalide.");
+    /// <summary>
+    /// Date de modification automatique.
+    /// </summary>
+    public DateTime? DateModified { get; set; }
 
-        Id = _idCounter++; // Genere un ID unique
+    /// <summary>
+    /// Date de suppression automatique.
+    /// </summary>
+    public DateTime? DateDeleted { get; set; }
+
+    /// <summary>
+    /// Version de la ligne pour la gestion des conflits.
+    /// </summary>
+    public byte[] RowVersion { get; set; } = null!;
+
+    #endregion
+
+    #region Constructeurs
+
+    /// <summary>
+    /// Constructeur principal.
+    /// </summary>
+    public Expedition(string deliveryService, string trackingCode) {
+        if (!ValidateDeliveryService(deliveryService)) {
+            throw new ArgumentOutOfRangeException(nameof(deliveryService), "Invalid delivery service.");
+        }
+
+        if (string.IsNullOrWhiteSpace(trackingCode)) {
+            throw new ArgumentException("Tracking code cannot be null or empty.", nameof(trackingCode));
+        }
+
         DeliveryService = deliveryService;
-        TrackingCode = GenerateTrackingCode(); // Genere automatiquement le code de suivi
+        TrackingCode = trackingCode;
     }
 
-    // Methode pour mettre a jour le service de livraison
-    public void UpdateDeliveryService(string newService) {
-        if (!IsValidService(newService))
-            throw new ArgumentException("Service de livraison invalide.");
-
-        DeliveryService = newService;
-        ModificationDate = DateTime.Now; // Date de modification automatique
+    /// <summary>
+    /// Constructeur pour Entity Framework.
+    /// </summary>
+    protected Expedition(int id, string deliveryService, string trackingCode, DateTime dateCreated, DateTime? dateModified, DateTime? dateDeleted, byte[] rowVersion)
+        : this(deliveryService, trackingCode) {
+        Id = id;
+        DateCreated = dateCreated;
+        DateModified = dateModified;
+        DateDeleted = dateDeleted;
+        RowVersion = rowVersion;
     }
 
-    // Methode pour annuler l expedition
+    #endregion
 
-    public void CancelExpedition() {
-        DeletionDate = DateTime.Now; // Date de suppression automatique
+    #region Méthodes de validation
+
+    /// <summary>
+    /// Valide si le service de livraison est valide.
+    /// </summary>
+    public static bool ValidateDeliveryService(string deliveryService) {
+        return DeliveryServices.Contains(deliveryService);
     }
 
-    // Methode pour verifier si le service est valide
+    #endregion
 
-    private bool IsValidService(string service) {
-        return Array.Exists(AllowedServices, s => s.Equals(service, StringComparison.OrdinalIgnoreCase));
+    #region Méthodes
+
+    /// <summary>
+    /// Retourne une chaîne représentant les informations de l'expédition.
+    /// </summary>
+    public override string ToString() {
+        return $"Expédition #{Id}: Service={DeliveryService}, TrackingCode={TrackingCode}, DateCreated={DateCreated:yyyy-MM-dd}";
     }
 
-    // Methode pour generer un faux code de suivi
-
-    private string GenerateTrackingCode() {
-
-        // Genere un code aleatoire de type alphanumerique pour simuler un code de suivi
-
-        Random random = new Random();
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        return new string(Enumerable.Repeat(chars, 10)
-          .Select(s => s[random.Next(s.Length)]).ToArray());
-    }
+    #endregion
 }

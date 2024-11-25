@@ -1,112 +1,155 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace _420DA3_A24_Projet.Business.Domain;
+/// <summary>
+/// Classe représentant un ordre d'expédition.
+/// </summary>
+public class OrdreExpedition {
+    // Constantes pour les valeurs possibles de statut
+    public const string STATUS_NEW = "new";
+    public const string STATUS_UNASSIGNED = "unassigned";
+    public const string STATUS_PROCESSING = "processing";
+    public const string STATUS_PACKAGED = "packaged";
+    public const string STATUS_SHIPPED = "shipped";
 
-namespace _420DA3_A24_Projet.Business.Domain;
-internal class OrdreExpeditions {
+    #region Propriétés de données
 
+    /// <summary>
+    /// Identifiant unique de l'ordre d'expédition.
+    /// </summary>
+    public int Id { get; set; }
 
-    public class OrderExpeditions {
-        private static int _idCounter = 1;     // Compteur pour ID unique
+    /// <summary>
+    /// Statut de l'ordre d'expédition.
+    /// </summary>
+    public string Status { get; set; } = STATUS_NEW;
 
-        public int Id { get; private set; }         // Identifiant unique
-        public string Status { get; private set; }    // Statut de l ordre
-        public int ClientId { get; set; }          // Identifiant du client
-        public int CreatedByUserId { get; set; }     // Identifiant de l utilisateur createur
-        public List<ProductOrderLink> ProductOrderLinks { get; private set; } = new List<ProductOrderLink>();     // Liens produits
+    /// <summary>
+    /// Identifiant du client associé à l'ordre d'expédition.
+    /// </summary>
+    public int ClientId { get; set; }
 
-        public int AddressId { get; set; } // Adresse du destinataire final
-        public int? AssignedWarehouseUserId { get; private set; } // Employe d entrepot assigne
-        public int? AssignedExpeditionId { get; private set; } // Expedition assignee
+    /// <summary>
+    /// Client associé à l'ordre d'expédition.
+    /// </summary>
+    public virtual Client Client { get; set; } = null!;
 
-        public DateTime? ShippingDate { get; private set; }                // Date d expedition
-        public DateTime CreationDate { get; private set; } = DateTime.Now; // Date de cré\eation automatique
-        public DateTime? ModificationDate { get; private set; }           // Date de modification
-        public DateTime? DeletionDate { get; private set; }               // Date de suppression
+    /// <summary>
+    /// Identifiant de l'utilisateur employé de bureau ou administrateur (créateur de l'ordre).
+    /// </summary>
+    public int CreatedById { get; set; }
 
-        private static readonly string[] AllowedStatuses = { "new", "unassigned", "processing", "packaged", "shipped" };
+    /// <summary>
+    /// Utilisateur employé de bureau ou administrateur (créateur de l'ordre).
+    /// </summary>
+    public virtual User CreatedBy { get; set; } = null!;
 
-        public OrderExpeditions(int clientId, int createdByUserId, int addressId) {
-            Id = _idCounter++;
-            ClientId = clientId;
-            CreatedByUserId = createdByUserId;
-            AddressId = addressId;
-            Status = "new"; // Statut initial
-        }
+    /// <summary>
+    /// Liste des liens produits-ordre d'expédition avec quantités.
+    /// </summary>
+    public virtual ICollection<Produit> ProduitOrdreExpedition { get; set; } = new HashSet<Produit>();
 
-        // Methode pour ajouter un produit a l ordre d expedition
+    /// <summary>
+    /// Adresse enregistrée pour l'expédition (destinataire final).
+    /// </summary>
+    public string Address { get; set; } = null!;
 
-        public void AddProduct(int productId, int quantity) {
-            ProductOrderLinks.Add(new ProductOrderLink(productId, quantity));
-            UpdateStock(productId, quantity);
-            ModificationDate = DateTime.Now;
-        }
+    /// <summary>
+    /// Identifiant de l'employé d'entrepôt attitré (nullable).
+    /// </summary>
+    public int? WarehouseEmployeeId { get; set; }
 
-        // Methode pour assigner un employe d entrepot
+    /// <summary>
+    /// Employé d'entrepôt attitré à cet ordre d'expédition (nullable).
+    /// </summary>
+    public virtual User? WarehouseEmployee { get; set; }
 
-        public void AssignWarehouseUser(int userId) {
-            AssignedWarehouseUserId = userId;
-            UpdateStatus("processing");
-        }
+    /// <summary>
+    /// Identifiant de l'expédition attitrée (nullable).
+    /// </summary>
+    public int? ShipmentId { get; set; }
 
-        // Methode pour assigner une expedition a cet ordre
+    /// <summary>
+    /// Expédition attitrée une fois les produits emballés (nullable).
+    /// </summary>
+    public virtual Expedition? Shipment { get; set; }
 
-        public void AssignExpedition(int expeditionId) {
-            AssignedExpeditionId = expeditionId;
-            UpdateStatus("packaged");
-        }
+    /// <summary>
+    /// Date d'expédition (remplie lorsque le colis est récupéré par un service externe, nullable).
+    /// </summary>
+    public DateTime? ShipmentDate { get; set; }
 
-        // Methode pour marquer l ordre comme expedie
+    /// <summary>
+    /// Date de création automatique.
+    /// </summary>
+    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
-        public void MarkAsShipped() {
-            UpdateStatus("shipped");
-            ShippingDate = DateTime.Now;
-        }
+    /// <summary>
+    /// Date de modification automatique.
+    /// </summary>
+    public DateTime? DateModified { get; set; }
 
-        // Methode pour annuler l ordre d expedition
+    /// <summary>
+    /// Date de suppression automatique.
+    /// </summary>
+    public DateTime? DateDeleted { get; set; }
 
-        public void CancelOrder() {
-            DeletionDate = DateTime.Now;
-            Status = "canceled";
-        }
+    /// <summary>
+    /// Version de la ligne pour la gestion des conflits.
+    /// </summary>
+    public byte[] RowVersion { get; set; } = null!;
 
-        // Methode pour mettre a jour le statut et la date de modification
+    #endregion
 
-        private void UpdateStatus(string newStatus) {
-            if (!IsValidStatus(newStatus))
-                throw new ArgumentException("Statut invalide.");
+    #region Constructeurs
 
-            Status = newStatus;
-            ModificationDate = DateTime.Now;
-        }
-
-        // Verifie si le statut est valide
-
-        private bool IsValidStatus(string status) {
-            return Array.Exists(AllowedStatuses, s => s.Equals(status, StringComparison.OrdinalIgnoreCase));
-        }
-
-        // Simule la reduction du stock pour chaque produit dans la commande
-
-        private void UpdateStock(int productId, int quantity) {
-            // Logique simulée pour réduire le stock
-            // Par exemple : ProductStock[productId] -= quantity;
-        }
+    /// <summary>
+    /// Constructeur principal.
+    /// </summary>
+    public OrdreExpedition(int clientId, int createdById, string address) {
+        ClientId = clientId;
+        CreatedById = createdById;
+        Address = address;
     }
 
-    // Classe pour gerer le lien produit ordre d expedition avec quantite
-
-    public class ProductOrderLink {
-        public int ProductId { get; set; }
-        public int Quantity { get; set; }
-
-        public ProductOrderLink(int productId, int quantity) {
-            ProductId = productId;
-            Quantity = quantity;
-        }
+    /// <summary>
+    /// Constructeur pour Entity Framework.
+    /// </summary>
+    protected OrdreExpedition(
+        int id,
+        string status,
+        int clientId,
+        int createdById,
+        string address,
+        int? warehouseEmployeeId,
+        int? shipmentId,
+        DateTime? shipmentDate,
+        DateTime dateCreated,
+        DateTime? dateModified,
+        DateTime? dateDeleted,
+        byte[] rowVersion)
+        : this(clientId, createdById, address) {
+        Id = id;
+        Status = status;
+        WarehouseEmployeeId = warehouseEmployeeId;
+        ShipmentId = shipmentId;
+        ShipmentDate = shipmentDate;
+        DateCreated = dateCreated;
+        DateModified = dateModified;
+        DateDeleted = dateDeleted;
+        RowVersion = rowVersion;
     }
+
+    #endregion
+
+    #region Méthodes
+
+    /// <summary>
+    /// Retourne une chaîne représentant les informations de l'ordre d'expédition.
+    /// </summary>
+    public override string ToString() {
+        return $"Ordre #{Id}: Status={Status}, Client={ClientId}, CreatedBy={CreatedById}, Address={Address}, ShipmentDate={ShipmentDate?.ToString("yyyy-MM-dd") ?? "Not shipped"}";
+    }
+
+    #endregion
 }
-
+}
 

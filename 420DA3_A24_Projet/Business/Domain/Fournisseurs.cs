@@ -1,35 +1,112 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace _420DA3_A24_Projet.Business.Domain;
+/// <summary>
+/// Classe représentant un fournisseur associé à des produits pour le restockage.
+/// </summary>
+public class Fournisseur {
+    // Constantes pour les limites de validation
+    public const int SUPPLIER_NAME_MAX_LENGTH = 128;
+    public const int CONTACT_NAME_MAX_LENGTH = 64;
+    public const int EMAIL_MAX_LENGTH = 128;
+    public const int PHONE_MAX_LENGTH = 15;
 
-namespace _420DA3_A24_Projet.Business.Domain;
-public class Fournisseurs {
+    #region Propriétés de données
 
-    // Attributs de la classe Fournisseur
+    /// <summary>
+    /// Identifiant unique du fournisseur.
+    /// </summary>
     public int Id { get; set; }
-    public string NomFournisseur { get; set; } = null!;
-    public string NomContact { get; set; } = null!;
-    public string PrenomContact { get; set; } = null!;
-    public string CourrielContact { get; set; } = null!;
-    public string TelephoneContact { get; set; } = null!;
-    public DateTime DateCreation { get; set; }
-    public DateTime DateModification { get; set; }
-    public DateTime? DateSuppression { get; set; }
 
-    // Constructeur par défaut
-    public Fournisseurs() {
-        DateCreation = DateTime.Now;
+    /// <summary>
+    /// Nom du fournisseur.
+    /// </summary>
+    public string SupplierName { get; set; } = null!;
+
+    /// <summary>
+    /// Prénom de la personne-contact du fournisseur.
+    /// </summary>
+    public string ContactFirstName { get; set; } = null!;
+
+    /// <summary>
+    /// Nom de famille de la personne-contact du fournisseur.
+    /// </summary>
+    public string ContactLastName { get; set; } = null!;
+
+    /// <summary>
+    /// Courriel de la personne-contact du fournisseur.
+    /// </summary>
+    public string ContactEmail { get; set; } = null!;
+
+    /// <summary>
+    /// Téléphone de la personne-contact du fournisseur.
+    /// </summary>
+    public string ContactPhone { get; set; } = null!;
+
+    /// <summary>
+    /// Date de création automatique.
+    /// </summary>
+    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Date de modification automatique.
+    /// </summary>
+    public DateTime? DateModified { get; set; }
+
+    /// <summary>
+    /// Date de suppression automatique.
+    /// </summary>
+    public DateTime? DateDeleted { get; set; }
+
+    /// <summary>
+    /// Version de la ligne pour la gestion des conflits.
+    /// </summary>
+    public byte[] RowVersion { get; set; } = null!;
+
+    #endregion
+
+    #region Propriétés de navigation
+
+    /// <summary>
+    /// Liste des produits associés à ce fournisseur.
+    /// </summary>
+    public virtual ICollection<Produit> Produits { get; set; } = new HashSet<Produit>();
+
+    #endregion
+
+    #region Constructeurs
+
+    /// <summary>
+    /// Constructeur principal.
+    /// </summary>
+    public Fournisseur(string supplierName, string contactFirstName, string contactLastName, string contactEmail, string contactPhone) {
+        SupplierName = supplierName;
+        ContactFirstName = contactFirstName;
+        ContactLastName = contactLastName;
+        ContactEmail = contactEmail;
+        ContactPhone = contactPhone;
     }
 
-    // Constructeur avec des paramètres
-    public Fournisseurs(string nomFournisseur, string nomContact, string prenomContact, string courrielContact, string telephoneContact) {
-        NomFournisseur = nomFournisseur;
-        NomContact = nomContact;
-        PrenomContact = prenomContact;
-        CourrielContact = courrielContact;
-        TelephoneContact = telephoneContact;
-        DateCreation = DateTime.Now;
+    /// <summary>
+    /// Constructeur pour Entity Framework.
+    /// </summary>
+    protected Fournisseur(int id, string supplierName, string contactFirstName, string contactLastName, string contactEmail, string contactPhone, DateTime dateCreated, DateTime? dateModified, DateTime? dateDeleted, byte[] rowVersion)
+        : this(supplierName, contactFirstName, contactLastName, contactEmail, contactPhone) {
+        Id = id;
+        DateCreated = dateCreated;
+        DateModified = dateModified;
+        DateDeleted = dateDeleted;
+        RowVersion = rowVersion;
     }
+
+    #endregion
+
+    #region Méthodes
+
+    /// <summary>
+    /// Retourne une chaîne représentant les informations du fournisseur.
+    /// </summary>
+    public override string ToString() {
+        return $"{SupplierName} - Contact: {ContactFirstName} {ContactLastName}, Email: {ContactEmail}, Phone: {ContactPhone}";
+    }
+
+    #endregion
 }

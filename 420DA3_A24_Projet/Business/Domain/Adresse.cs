@@ -101,10 +101,4 @@ public class Adresse {
     public string CodePostal {
         get { return this.codePostal; }
     }
-} 
-
-
-
-
-
-    
+}
