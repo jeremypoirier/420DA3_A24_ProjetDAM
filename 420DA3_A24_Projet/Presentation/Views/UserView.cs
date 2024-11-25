@@ -150,8 +150,7 @@ internal partial class UserView : Form {
             //user.Roles = this.userRolesValues.SelectedItems.Cast<Role>().ToList();
 
         } catch (Exception ex) {
-            _ = MessageBox.Show(ex.Message,
-                "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            this.parentApp.HandleException(ex);
             return;
         }
     }

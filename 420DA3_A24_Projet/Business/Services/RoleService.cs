@@ -1,6 +1,8 @@
 ﻿using _420DA3_A24_Projet.Business.Domain;
 using _420DA3_A24_Projet.DataAccess.Contexts;
 using _420DA3_A24_Projet.DataAccess.DAOs;
+using _420DA3_A24_Projet.Presentation.Views;
+using System.Runtime.Serialization;
 
 namespace _420DA3_A24_Projet.Business.Services;
 
@@ -10,6 +12,7 @@ namespace _420DA3_A24_Projet.Business.Services;
 internal class RoleService {
 
     private readonly RoleDAO dao;
+    private readonly RoleView view;
 
     /// <summary>
     /// TODO @PROF: documenter
@@ -18,6 +21,47 @@ internal class RoleService {
     /// <param name="context"></param>
     public RoleService(WsysApplication parentApp, WsysDbContext context) {
         this.dao = new RoleDAO(context);
+        this.view = new RoleView(parentApp);
+    }
+
+    /// <summary>
+    /// TODO @PROF: documenter
+    /// </summary>
+    /// <returns></returns>
+    public Role? OpenUserWindowForCreation() {
+        Role newRole = (Role) FormatterServices.GetUninitializedObject(typeof(Role));
+        DialogResult result = this.view.OpenForCreation(newRole);
+        return result == DialogResult.OK ? newRole : null;
+    }
+
+    /// <summary>
+    /// TODO @PROF: documenter
+    /// </summary>
+    /// <param name="role"></param>
+    /// <returns></returns>
+    public Role? OpenUserWindowForDetailsView(Role role) {
+        DialogResult result = this.view.OpenForDetailsView(role);
+        return result == DialogResult.OK ? role : null;
+    }
+
+    /// <summary>
+    /// TODO @PROF: documenter
+    /// </summary>
+    /// <param name="role"></param>
+    /// <returns></returns>
+    public Role? OpenUserWindowForEdition(Role role) {
+        DialogResult result = this.view.OpenForEdition(role);
+        return result == DialogResult.OK ? role : null;
+    }
+
+    /// <summary>
+    /// TODO @PROF: documenter
+    /// </summary>
+    /// <param name="role"></param>
+    /// <returns></returns>
+    public Role? OpenUserWindowForDeletion(Role role) {
+        DialogResult result = this.view.OpenForDeletion(role);
+        return result == DialogResult.OK ? role : null;
     }
 
     /// <summary>
