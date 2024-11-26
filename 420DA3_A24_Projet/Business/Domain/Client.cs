@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace _420DA3_A24_Projet.Business.Domain;
 
-namespace _420DA3_A24_Projet.Business.Domain;
+/// <summary>
+/// TODO @MOATAZ: documenter
+/// </summary>
 public class Client {
 
     /// <summary>
@@ -31,6 +29,7 @@ public class Client {
 
     // Propriétés des clients
     public int Id { get; set; }
+
     public string Nom {
         get { return this.nom; }
         set {
@@ -61,10 +60,52 @@ public class Client {
     public string Email {
         get { return this.email; }
     }
+
+    // TODO @MOATAZ: voir commentaires ci-dessous
+    // propriétés de données:
+    // - Ajouter une propriété NomClient de type string.
+    //      Les clients de l'application ne sont pas des individus, mais des entreprises.
+    //      Ils n'ont donc pas de nom de famille/prénom, juste un nom d'entreprise.
+    //      Cependant, nous sauvegardons le nom d'une personne-contact pour chaque entreprise-cliente.
+    //      Donc, aussi TODO modifier les propriétés existantes pour rendre ça plus clair:
+    //          - Nom -> NomContact
+    //          - Prenom -> PrenomContact
+    //          - Email -> EmailContact
+    //          - Telephone -> TelephoneContact
+    // - EntrepotAssigneId de type int, pour la clé étrangère de l'entrepôt assigné
+    // - DateCreated de type DateTime
+    // - DateModified de type DateTime nullable
+    // - DateDeleted de type DateTime nullable
+    // - RowVersion de type byte[]
+
+
+    // TODO @MOATAZ: voir commentaires ci-dessous
+    // propriétés de navigation (avec midificateur 'virtual'):
+    // - EntrepotAssigne de type Entrepot
+    // - Produits de type List<Produit>
+    // - OrdresExpedition de type List<OrdreExpedition>
+
+
+
+    // TODO @MOATAZ: voir commentaires ci-dessous
+    // 2 constructeurs:
+    // - 1 orienté création depuis interface utilisateur, sans paramètres
+    // - 1 orienté création depuis base de données via EF Core, avec paramètres:
+    //   + id de type int
+    //   + nomClient de type string
+    //   + nomContact de type string
+    //   + prenomContact de type string
+    //   + emailContact de type string
+    //   + telephoneContact de type string
+    //   + entrepotAssigneId de type int
+    //   + dateCreated de type DateTime
+    //   + dateModified de type DateTime nullable
+    //   + dateDeleted de type DateTime nullable
+    //   + rowVersion de type byte[]
 }
 
 
 
 
 
-    
+
