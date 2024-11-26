@@ -68,7 +68,7 @@ public class Fournisseur {
     /// <summary>
     /// Liste des produits associés à ce fournisseur.
     /// </summary>
-    public virtual ICollection<Produit> Produits { get; set; } = new HashSet<Produit>();
+    public virtual ICollection<Produits> Produits { get; set; } = new HashSet<Produits>();
 
     #endregion
 

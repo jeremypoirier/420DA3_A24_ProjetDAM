@@ -45,7 +45,7 @@ public class OrdreExpedition {
     /// <summary>
     /// Liste des liens produits-ordre d'expédition avec quantités.
     /// </summary>
-    public virtual ICollection<Produit> ProduitOrdreExpedition { get; set; } = new HashSet<Produit>();
+    public virtual ICollection<Produits> ProduitOrdreExpedition { get; set; } = new HashSet<Produits>();
 
     /// <summary>
     /// Adresse enregistrée pour l'expédition (destinataire final).
@@ -151,5 +151,5 @@ public class OrdreExpedition {
 
     #endregion
 }
-}
+
 

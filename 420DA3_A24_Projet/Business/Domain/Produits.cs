@@ -152,6 +152,3 @@ public class Produits {
 
     #endregion
 }
-}
-
-Dispose d’un menu contextuel
