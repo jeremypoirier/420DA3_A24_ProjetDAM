@@ -1,98 +1,108 @@
-﻿/// <summary>
-/// TODO @YASSINE: documenter
+﻿namespace _420DA3_A24_Projet.Business.Domain;
+/// <summary>
+/// Classe représentant une expédition.
 /// </summary>
 public class Expedition {
+    // Constantes pour les services de livraison
+    public const string PUROLATOR = "Purolator";
+    public const string POSTES_CANADA = "PostesCanada";
+    public const string FEDEX = "FedEx";
 
-    // TODO @YASSINE: retirer cette ligne et toute la logique qui s'y rapporte.
-    // L'Id est déterminé par la base de données, JAMAIS par le code.
-    private static int _idCounter = 1;                   // Compteur d ID unique pour chaque instance
+    /// <summary>
+    /// Liste des services de livraison valides.
+    /// </summary>
+    public static readonly string[] DeliveryServices = { PUROLATOR, POSTES_CANADA, FEDEX };
 
-    public int Id { get; private set; }                 // Identifiant interne unique
+    #region Propriétés de données
 
+    /// <summary>
+    /// Identifiant unique de l'expédition.
+    /// </summary>
+    public int Id { get; set; }
 
-    // TODO @YASSINE: changer le type de DeliveryService pour ShippingProvidersEnum (fourni dans Project_Utilities.Enums )
-    public string DeliveryService { get; private set; } // Service de livraison
-    public string TrackingCode { get; private set; }    // Code de suivi genere automatiquement
+    /// <summary>
+    /// Service de livraison utilisé pour l'expédition.
+    /// </summary>
+    public string DeliveryService { get; set; } = PUROLATOR;
 
+    /// <summary>
+    /// Code de suivi généré automatiquement par le service de livraison.
+    /// </summary>
+    public string TrackingCode { get; set; } = string.Empty;
 
-    // TODO @YASSINE: ajouter propriétés de données:
-    // - ShippingOrderId de type int
-    // - RowVersion de type byte[]
+    /// <summary>
+    /// Date de création automatique.
+    /// </summary>
+    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
-    public DateTime CreationDate { get; private set; } = DateTime.Now; // Date de création automatique
-    public DateTime? ModificationDate { get; private set; } // Date de modification automatique
-    public DateTime? DeletionDate { get; private set; } // Date de suppression automatique
+    /// <summary>
+    /// Date de modification automatique.
+    /// </summary>
+    public DateTime? DateModified { get; set; }
 
+    /// <summary>
+    /// Date de suppression automatique.
+    /// </summary>
+    public DateTime? DateDeleted { get; set; }
 
+    /// <summary>
+    /// Version de la ligne pour la gestion des conflits.
+    /// </summary>
+    public byte[] RowVersion { get; set; } = null!;
 
-    // TODO @YASSINE: ajouter propriété de navigation (avec modificateur 'virtual'):
-    // - ShippingOrder de type ShippingOrder
+    #endregion
 
+    #region Constructeurs
 
+    /// <summary>
+    /// Constructeur principal.
+    /// </summary>
+    public Expedition(string deliveryService, string trackingCode) {
+        if (!ValidateDeliveryService(deliveryService)) {
+            throw new ArgumentOutOfRangeException(nameof(deliveryService), "Invalid delivery service.");
+        }
 
-    // TODO @YASSINE: supprimer cette ligne; l'enum ShippingProvidersEnum va faire le travail
-    private static readonly string[] AllowedServices = { "Purolator", "PostesCanada", "FedEx" };
-
-    // Constructeur par defaut (non utilise ici mais peut etre utile)
-
-    public Expedition() { }
-
-    // Constructeur principal avec un service de livraison (code de suivi genere automatiquement)
-
-    // TODO @YASSINE: changer le type du paramètre pour ShippingProvidersEnum
-    public Expedition(string deliveryService) {
-        // TODO @YASSINE: supprimer le check, l'enum fait le travail
-        if (!IsValidService(deliveryService))
-            throw new ArgumentException("Service de livraison invalide.");
-
-        // TODO @YASSINE: supprimer cette ligne; l'Id est géré par la base de données
-        Id = _idCounter++; // Genere un ID unique
-
+        if (string.IsNullOrWhiteSpace(trackingCode)) {
+            throw new ArgumentException("Tracking code cannot be null or empty.", nameof(trackingCode));
+        }
 
         DeliveryService = deliveryService;
-
-
-        // TODO @YASSINE: utiliser le code déjà fourni pour générer le code de suivi:
-        // TrackingCode = TrackingNumberFactory.GetInstance().GetNewTrackingNumber(ShippingProvidersEnum shipmentProvider)
-        TrackingCode = GenerateTrackingCode(); // Genere automatiquement le code de suivi
+        TrackingCode = trackingCode;
     }
 
-
-    // TODO @YASSINE: supprimer cette méthode, de par les requis un shipment ne peut pas être modifié ou supprimé
-    // Methode pour mettre a jour le service de livraison
-    public void UpdateDeliveryService(string newService) {
-        if (!IsValidService(newService))
-            throw new ArgumentException("Service de livraison invalide.");
-
-        DeliveryService = newService;
-        ModificationDate = DateTime.Now; // Date de modification automatique
+    /// <summary>
+    /// Constructeur pour Entity Framework.
+    /// </summary>
+    protected Expedition(int id, string deliveryService, string trackingCode, DateTime dateCreated, DateTime? dateModified, DateTime? dateDeleted, byte[] rowVersion)
+        : this(deliveryService, trackingCode) {
+        Id = id;
+        DateCreated = dateCreated;
+        DateModified = dateModified;
+        DateDeleted = dateDeleted;
+        RowVersion = rowVersion;
     }
 
-    // Methode pour annuler l expedition
+    #endregion
 
-    // TODO @YASSINE: supprimer cette méthode, de par les requis un shipment ne peut pas être modifié ou supprimé
-    public void CancelExpedition() {
-        DeletionDate = DateTime.Now; // Date de suppression automatique
+    #region Méthodes de validation
+
+    /// <summary>
+    /// Valide si le service de livraison est valide.
+    /// </summary>
+    public static bool ValidateDeliveryService(string deliveryService) {
+        return DeliveryServices.Contains(deliveryService);
     }
 
-    // Methode pour verifier si le service est valide
+    #endregion
 
-    // TODO @YASSINE: supprimer cette méthode, inutile: l'utilisation de ShippingProvidersEnum va faire le travail
-    private bool IsValidService(string service) {
-        return Array.Exists(AllowedServices, s => s.Equals(service, StringComparison.OrdinalIgnoreCase));
+    #region Méthodes
+
+    /// <summary>
+    /// Retourne une chaîne représentant les informations de l'expédition.
+    /// </summary>
+    public override string ToString() {
+        return $"Expédition #{Id}: Service={DeliveryService}, TrackingCode={TrackingCode}, DateCreated={DateCreated:yyyy-MM-dd}";
     }
 
-    // Methode pour generer un faux code de suivi
-
-    // TODO @YASSINE: supprimer cette méthode, inutile: code de génération de tracking number déjà fourni
-    // dans TrackingNumberFactory (service)
-    private string GenerateTrackingCode() {
-
-        // Genere un code aleatoire de type alphanumerique pour simuler un code de suivi
-
-        Random random = new Random();
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        return new string(Enumerable.Repeat(chars, 10)
-          .Select(s => s[random.Next(s.Length)]).ToArray());
-    }
+    #endregion
 }

@@ -60,5 +60,3 @@ internal class Entrepot { // TODO @JEREMY: marquer public au lieu de internal. l
         DateCreation = DateTime.Now;
     }
 }
-
-

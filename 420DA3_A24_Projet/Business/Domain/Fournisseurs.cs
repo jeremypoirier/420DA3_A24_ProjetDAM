@@ -1,59 +1,112 @@
 ﻿namespace _420DA3_A24_Projet.Business.Domain;
-
-// TODO @ YASSINE & MOATAZ: attention! y'a quelqu'un ici qui fait le travail de l'autre!
-// M. Gourar, vous ne devriez pas avoir réalisé trois classes-entité; seulement deux!
-
 /// <summary>
-/// TODO @YASSINE: documenter
+/// Classe représentant un fournisseur associé à des produits pour le restockage.
 /// </summary>
-public class Fournisseurs { // TODO: renommer la classe pour avoir le nom au singulier
+public class Fournisseur {
+    // Constantes pour les limites de validation
+    public const int SUPPLIER_NAME_MAX_LENGTH = 128;
+    public const int CONTACT_NAME_MAX_LENGTH = 64;
+    public const int EMAIL_MAX_LENGTH = 128;
+    public const int PHONE_MAX_LENGTH = 15;
 
-    // TODO: ajouter des constantes publiques de type int pour les longueur des strings
-    // à utiliser pour la validation et pour la configuration des colonnes dans la classe de
-    // contexte.
+    #region Propriétés de données
 
-    // Attributs de la classe Fournisseur
+    /// <summary>
+    /// Identifiant unique du fournisseur.
+    /// </summary>
     public int Id { get; set; }
 
-    // TODO: Validation des strings
-    public string NomFournisseur { get; set; } = null!;
-    public string NomContact { get; set; } = null!;
-    public string PrenomContact { get; set; } = null!;
-    public string CourrielContact { get; set; } = null!;
-    public string TelephoneContact { get; set; } = null!;
-    public DateTime DateCreation { get; set; }
-    public DateTime DateModification { get; set; }
-    public DateTime? DateSuppression { get; set; }
+    /// <summary>
+    /// Nom du fournisseur.
+    /// </summary>
+    public string SupplierName { get; set; } = null!;
 
-    // TODO: Ajouter propriété de données anti-concurrence:
-    // - RowVersion de type byte[]
+    /// <summary>
+    /// Prénom de la personne-contact du fournisseur.
+    /// </summary>
+    public string ContactFirstName { get; set; } = null!;
 
+    /// <summary>
+    /// Nom de famille de la personne-contact du fournisseur.
+    /// </summary>
+    public string ContactLastName { get; set; } = null!;
 
-    // TODO: Ajouter propriété de navigation (avec modificateur 'virtual'):
-    // - Produits de type List<Produit>
+    /// <summary>
+    /// Courriel de la personne-contact du fournisseur.
+    /// </summary>
+    public string ContactEmail { get; set; } = null!;
 
-    // Constructeur par défaut
-    public Fournisseurs() {
-        // TODO: supprimer cette ligne, c'est la base de donnée qui fournira la date de création
-        // à l'aide d'une valeur par défaut GETDATE()
-        DateCreation = DateTime.Now;
+    /// <summary>
+    /// Téléphone de la personne-contact du fournisseur.
+    /// </summary>
+    public string ContactPhone { get; set; } = null!;
+
+    /// <summary>
+    /// Date de création automatique.
+    /// </summary>
+    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Date de modification automatique.
+    /// </summary>
+    public DateTime? DateModified { get; set; }
+
+    /// <summary>
+    /// Date de suppression automatique.
+    /// </summary>
+    public DateTime? DateDeleted { get; set; }
+
+    /// <summary>
+    /// Version de la ligne pour la gestion des conflits.
+    /// </summary>
+    public byte[] RowVersion { get; set; } = null!;
+
+    #endregion
+
+    #region Propriétés de navigation
+
+    /// <summary>
+    /// Liste des produits associés à ce fournisseur.
+    /// </summary>
+    public virtual ICollection<Produit> Produits { get; set; } = new HashSet<Produit>();
+
+    #endregion
+
+    #region Constructeurs
+
+    /// <summary>
+    /// Constructeur principal.
+    /// </summary>
+    public Fournisseur(string supplierName, string contactFirstName, string contactLastName, string contactEmail, string contactPhone) {
+        SupplierName = supplierName;
+        ContactFirstName = contactFirstName;
+        ContactLastName = contactLastName;
+        ContactEmail = contactEmail;
+        ContactPhone = contactPhone;
     }
 
-    // Constructeur avec des paramètres
-    public Fournisseurs(string nomFournisseur, string nomContact, string prenomContact, string courrielContact, string telephoneContact) {
-        NomFournisseur = nomFournisseur;
-        NomContact = nomContact;
-        PrenomContact = prenomContact;
-        CourrielContact = courrielContact;
-        TelephoneContact = telephoneContact;
-
-
-        // TODO: supprimer cette ligne, c'est la base de donnée qui fournira la date de création
-        DateCreation = DateTime.Now;
+    /// <summary>
+    /// Constructeur pour Entity Framework.
+    /// </summary>
+    protected Fournisseur(int id, string supplierName, string contactFirstName, string contactLastName, string contactEmail, string contactPhone, DateTime dateCreated, DateTime? dateModified, DateTime? dateDeleted, byte[] rowVersion)
+        : this(supplierName, contactFirstName, contactLastName, contactEmail, contactPhone) {
+        Id = id;
+        DateCreated = dateCreated;
+        DateModified = dateModified;
+        DateDeleted = dateDeleted;
+        RowVersion = rowVersion;
     }
 
+    #endregion
 
-    // TODO: Entity Framework a besoin d'un constructeur avec des paramètres
-    // pour TOUTES les propriétés de données, incluant l'id, les dates de création,
-    // modification et suppression et la version de ligne.
+    #region Méthodes
+
+    /// <summary>
+    /// Retourne une chaîne représentant les informations du fournisseur.
+    /// </summary>
+    public override string ToString() {
+        return $"{SupplierName} - Contact: {ContactFirstName} {ContactLastName}, Email: {ContactEmail}, Phone: {ContactPhone}";
+    }
+
+    #endregion
 }

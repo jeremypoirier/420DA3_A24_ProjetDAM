@@ -1,186 +1,155 @@
 ﻿namespace _420DA3_A24_Projet.Business.Domain;
+/// <summary>
+/// Classe représentant un ordre d'expédition.
+/// </summary>
+public class OrdreExpedition {
+    // Constantes pour les valeurs possibles de statut
+    public const string STATUS_NEW = "new";
+    public const string STATUS_UNASSIGNED = "unassigned";
+    public const string STATUS_PROCESSING = "processing";
+    public const string STATUS_PACKAGED = "packaged";
+    public const string STATUS_SHIPPED = "shipped";
 
-// TODO @HACHEM: Classes imbriquées: supprimer cette classe englobante inutile et
-// ne garder que celle actuellement interne.
-internal class OrdreExpeditions {
-
+    #region Propriétés de données
 
     /// <summary>
-    /// // TODO @HACHEM: documenter
+    /// Identifiant unique de l'ordre d'expédition.
     /// </summary>
-    public class OrderExpeditions { // TODO @HACHEM: renommer la classe pour être au singulier
+    public int Id { get; set; }
 
-        // TODO @HACHEM: supprimer cette ligne et toute la logique qui s'y rattache.
-        // C'est la base de données qui gère les Ids, JAMAIS l'application.
-        private static int _idCounter = 1;     // Compteur pour ID unique
+    /// <summary>
+    /// Statut de l'ordre d'expédition.
+    /// </summary>
+    public string Status { get; set; } = STATUS_NEW;
 
-        public int Id { get; private set; }         // Identifiant unique
+    /// <summary>
+    /// Identifiant du client associé à l'ordre d'expédition.
+    /// </summary>
+    public int ClientId { get; set; }
 
-        // TODO @HACHEM: changer le type pour ShippingOrderStatusEnum (fourni dans Project_Utilities.Enums)
-        public string Status { get; private set; }    // Statut de l ordre
-        public int ClientId { get; set; }          // Identifiant du client
-        public int CreatedByUserId { get; set; }     // Identifiant de l utilisateur createur
-        public int AddressId { get; set; } // Adresse du destinataire final
-        public int? AssignedWarehouseUserId { get; private set; } // Employe d entrepot assigne
-        public int? AssignedExpeditionId { get; private set; } // Expedition assignee
+    /// <summary>
+    /// Client associé à l'ordre d'expédition.
+    /// </summary>
+    public virtual Client Client { get; set; } = null!;
 
-        public DateTime? ShippingDate { get; private set; }                // Date d expedition
+    /// <summary>
+    /// Identifiant de l'utilisateur employé de bureau ou administrateur (créateur de l'ordre).
+    /// </summary>
+    public int CreatedById { get; set; }
 
-        // TODO @HACHEM: retirer la valeur initiale DateTime.Now . C'est la base de données
-        // qui doit générera la date et heure d'insertion via valeur par défaut GETDATE().
-        public DateTime CreationDate { get; private set; } = DateTime.Now; // Date de cré\eation automatique
-        public DateTime? ModificationDate { get; private set; }           // Date de modification
-        public DateTime? DeletionDate { get; private set; }               // Date de suppression
+    /// <summary>
+    /// Utilisateur employé de bureau ou administrateur (créateur de l'ordre).
+    /// </summary>
+    public virtual User CreatedBy { get; set; } = null!;
 
-        // TODO @HACHEM: ajouter propriétés de données:
-        // - RowVersion de type byte[]
+    /// <summary>
+    /// Liste des liens produits-ordre d'expédition avec quantités.
+    /// </summary>
+    public virtual ICollection<Produit> ProduitOrdreExpedition { get; set; } = new HashSet<Produit>();
 
+    /// <summary>
+    /// Adresse enregistrée pour l'expédition (destinataire final).
+    /// </summary>
+    public string Address { get; set; } = null!;
 
+    /// <summary>
+    /// Identifiant de l'employé d'entrepôt attitré (nullable).
+    /// </summary>
+    public int? WarehouseEmployeeId { get; set; }
 
-        // TODO @HACHEM: ajouter modificateur 'virtual' à ProductOrderLinks
-        public List<ProductOrderLink> ProductOrderLinks { get; private set; } = new List<ProductOrderLink>();     // Liens produits
-        // TODO @HACHEM: ajouter propriétés de navigation (avec modificateur 'virtual'):
-        // - Client de type Client
-        // - CreatedByUser de type User
-        // - Adresse de type Adresse
-        // - AssignedWarehouseUser de type User nullable
-        // - AssignedExpedition de type Expedition nullable
+    /// <summary>
+    /// Employé d'entrepôt attitré à cet ordre d'expédition (nullable).
+    /// </summary>
+    public virtual User? WarehouseEmployee { get; set; }
 
+    /// <summary>
+    /// Identifiant de l'expédition attitrée (nullable).
+    /// </summary>
+    public int? ShipmentId { get; set; }
 
+    /// <summary>
+    /// Expédition attitrée une fois les produits emballés (nullable).
+    /// </summary>
+    public virtual Expedition? Shipment { get; set; }
 
-        // TODO @HACHEM: supprimer cette ligne.
-        private static readonly string[] AllowedStatuses = { "new", "unassigned", "processing", "packaged", "shipped" };
+    /// <summary>
+    /// Date d'expédition (remplie lorsque le colis est récupéré par un service externe, nullable).
+    /// </summary>
+    public DateTime? ShipmentDate { get; set; }
 
+    /// <summary>
+    /// Date de création automatique.
+    /// </summary>
+    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
+    /// <summary>
+    /// Date de modification automatique.
+    /// </summary>
+    public DateTime? DateModified { get; set; }
 
-        public OrderExpeditions(int clientId, int createdByUserId, int addressId) {
+    /// <summary>
+    /// Date de suppression automatique.
+    /// </summary>
+    public DateTime? DateDeleted { get; set; }
 
-            // TODO @HACHEM: supprimer cette ligne.
-            Id = _idCounter++;
+    /// <summary>
+    /// Version de la ligne pour la gestion des conflits.
+    /// </summary>
+    public byte[] RowVersion { get; set; } = null!;
 
-            ClientId = clientId;
-            CreatedByUserId = createdByUserId;
-            AddressId = addressId;
+    #endregion
 
-            // TODO @HACHEM: remplacer par l'utilisation de l'enum fournie ShippingOrderStatusEnum
-            Status = "new"; // Statut initial
-        }
+    #region Constructeurs
 
-
-        // TODO @HACHEM: Entity Framework a besoin d'un constructeur avec des paramètres
-        // pour TOUTES les propriétés de données, incluant l'id, les dates de création,
-        // modification et suppression et la version de ligne etc...
-
-
-        // Methode pour ajouter un produit a l ordre d expedition
-
-
-
-        // TODO @HACHEM: Mauvaise place. Ceci est de la logique métier.
-        // Cela devrait être dans une classe de service ou de gestionnaire d'ordres.
-        public void AddProduct(int productId, int quantity) {
-            ProductOrderLinks.Add(new ProductOrderLink(productId, quantity));
-            UpdateStock(productId, quantity);
-
-            // TODO @HACHEM: supprimer ceci, on va setter la date de modification
-            // directement dans la méthode d'update du DAO
-            ModificationDate = DateTime.Now;
-        }
-
-        // Methode pour assigner un employe d entrepot
-
-        public void AssignWarehouseUser(int userId) {
-            AssignedWarehouseUserId = userId;
-
-            // TODO @HACHEM: remplacer par l'utilisation de l'enum fournie ShippingOrderStatusEnum
-            UpdateStatus("processing");
-        }
-
-        // Methode pour assigner une expedition a cet ordre
-
-        public void AssignExpedition(int expeditionId) {
-            AssignedExpeditionId = expeditionId;
-
-            // TODO @HACHEM: remplacer par l'utilisation de l'enum fournie ShippingOrderStatusEnum
-            UpdateStatus("packaged");
-        }
-
-        // Methode pour marquer l ordre comme expedie
-
-        public void MarkAsShipped() {
-
-            // TODO @HACHEM: remplacer par l'utilisation de l'enum fournie ShippingOrderStatusEnum
-            UpdateStatus("shipped");
-            ShippingDate = DateTime.Now;
-        }
-
-        // Methode pour annuler l ordre d expedition
-
-        public void CancelOrder() {
-            // TODO @HACHEM: supprimer ceci, on va setter la date de modification
-            // directement dans la méthode de delete du DAO
-            DeletionDate = DateTime.Now;
-
-            // TODO @HACHEM: remplacer par l'utilisation de l'enum fournie ShippingOrderStatusEnum
-            Status = "canceled";
-        }
-
-        // Methode pour mettre a jour le statut et la date de modification
-
-        private void UpdateStatus(string newStatus) {
-            // TODO @HACHEM: supprimer le check; inutile par l'utilisation de l'enum fournie ShippingOrderStatusEnum
-            if (!IsValidStatus(newStatus))
-                throw new ArgumentException("Statut invalide.");
-
-            Status = newStatus;
-
-            // TODO @HACHEM: supprimer ceci, on va setter la date de modification
-            // directement dans la méthode d'update du DAO
-            ModificationDate = DateTime.Now;
-        }
-
-        // Verifie si le statut est valide
-
-        // TODO @HACHEM: supprimer la méthode; inutile par l'utilisation de l'enum fournie ShippingOrderStatusEnum
-        private bool IsValidStatus(string status) {
-            return Array.Exists(AllowedStatuses, s => s.Equals(status, StringComparison.OrdinalIgnoreCase));
-        }
-
-        // Simule la reduction du stock pour chaque produit dans la commande
-
-        // TODO @HACHEM: Mauvaise place. Ceci est de la logique métier.
-        // Et c'est en rapport avec les produits, pas les ordres d'expédition.
-        private void UpdateStock(int productId, int quantity) {
-            // Logique simulée pour réduire le stock
-            // Par exemple : ProductStock[productId] -= quantity;
-        }
+    /// <summary>
+    /// Constructeur principal.
+    /// </summary>
+    public OrdreExpedition(int clientId, int createdById, string address) {
+        ClientId = clientId;
+        CreatedById = createdById;
+        Address = address;
     }
 
-    // Classe pour gerer le lien produit ordre d expedition avec quantite
-
-
-
-    // TODO @HACHEM: Mauvaise place. Crééer une nouvelle classe-entité dans son propre fichier
-    // pour représenter les associations Produits - Ordres d'expédition.
-    public class ProductOrderLink {
-
-        // TODO @HACHEM: Ajouter propriété de donnée OrderId de type int
-        public int ProductId { get; set; }
-
-        // TODO @HACHEM: validation de la quantité ( > 0 )
-        public int Quantity { get; set; }
-
-        // TODO @HACHEM: ajouter propriétés de navigation (avec modificateur 'virtual'):
-        // - Product de type Product
-        // - Order de type Order
-
-
-        // TODO @HACHEM: ajouter paramètre orderId au constructeur et l'assigner à la propriété OrderId
-        public ProductOrderLink(int productId, int quantity) {
-            ProductId = productId;
-            Quantity = quantity;
-        }
+    /// <summary>
+    /// Constructeur pour Entity Framework.
+    /// </summary>
+    protected OrdreExpedition(
+        int id,
+        string status,
+        int clientId,
+        int createdById,
+        string address,
+        int? warehouseEmployeeId,
+        int? shipmentId,
+        DateTime? shipmentDate,
+        DateTime dateCreated,
+        DateTime? dateModified,
+        DateTime? dateDeleted,
+        byte[] rowVersion)
+        : this(clientId, createdById, address) {
+        Id = id;
+        Status = status;
+        WarehouseEmployeeId = warehouseEmployeeId;
+        ShipmentId = shipmentId;
+        ShipmentDate = shipmentDate;
+        DateCreated = dateCreated;
+        DateModified = dateModified;
+        DateDeleted = dateDeleted;
+        RowVersion = rowVersion;
     }
+
+    #endregion
+
+    #region Méthodes
+
+    /// <summary>
+    /// Retourne une chaîne représentant les informations de l'ordre d'expédition.
+    /// </summary>
+    public override string ToString() {
+        return $"Ordre #{Id}: Status={Status}, Client={ClientId}, CreatedBy={CreatedById}, Address={Address}, ShipmentDate={ShipmentDate?.ToString("yyyy-MM-dd") ?? "Not shipped"}";
+    }
+
+    #endregion
 }
-
+}
 
